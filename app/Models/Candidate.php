@@ -10,10 +10,12 @@ class Candidate extends Model
 {
     use HasFactory;
 
+    // Kolom yang bisa diisi mass-assignment
     protected $fillable = [
         'name',
         'vision',
         'mission',
+        'photo',
     ];
 
     /**

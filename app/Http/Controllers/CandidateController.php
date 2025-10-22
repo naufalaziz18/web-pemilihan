@@ -30,16 +30,33 @@ class CandidateController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'vision' => 'required|string',
-            'mission' => 'required|string',
+            'name' => 'required',
+            'vision' => 'required',
+            'mission' => 'required',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        Candidate::create($request->only(['name', 'vision', 'mission']));
+        // Simpan foto ke folder public/fotos
+        $path = null;
+        if ($request->hasFile('photo')) {
+            // Simpan di storage/app/public/photos
+            $path = $request->file('photo')->store('photos', 'public');
+        }
+        $photoPath = $path;
 
-        return redirect()->route('candidates.index')
-                         ->with('success', 'Kandidat berhasil ditambahkan!');
+        // Simpan data ke database
+        Candidate::create([
+            'name' => $request->name,
+            'vision' => $request->vision,
+            'mission' => $request->mission,
+            'photo' => $photoPath,
+        ]);
+
+        return redirect()->route('candidates.index')->with('success', 'Kandidat berhasil ditambahkan');
+
+        
     }
+
 
     /**
      * Form untuk edit kandidat
@@ -53,20 +70,43 @@ class CandidateController extends Controller
     /**
      * Proses update kandidat
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Candidate $candidate)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'vision' => 'required|string',
-            'mission' => 'required|string',
+            'name' => 'required',
+            'vision' => 'required',
+            'mission' => 'required',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $candidate = Candidate::findOrFail($id);
-        $candidate->update($request->only(['name', 'vision', 'mission']));
+        $data = [
+            'name' => $request->name,
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Menghapus kandidat berdasarkan id yang diberikan
+ *
+ * @param int $id id kandidat yang ingin dihapus
+ *
+ * @return \Illuminate\Http\RedirectResponse
+ */
+/*******  e58bfc7a-3a79-4f4e-8fc5-10416c5d7682  *******/            'vision' => $request->vision,
+            'mission' => $request->mission,
+        ];
 
-        return redirect()->route('candidates.index')
-                         ->with('success', 'Kandidat berhasil diperbarui!');
+        // Jika ada foto baru, simpan dan hapus foto lama
+        if ($request->hasFile('photo')) {
+            if ($candidate->photo && file_exists(storage_path('app/public/' . $candidate->photo))) {
+                unlink(storage_path('app/public/' . $candidate->photo));
+            }
+            $data['photo'] = $request->file('photo')->store('fotos', 'public');
+        }
+
+        $candidate->update($data);
+
+        return redirect()->route('candidates.index')->with('success', 'Kandidat berhasil diupdate');
     }
+
+
 
     /**
      * Hapus kandidat
@@ -77,6 +117,6 @@ class CandidateController extends Controller
         $candidate->delete();
 
         return redirect()->route('candidates.index')
-                         ->with('success', 'Kandidat berhasil dihapus!');
+            ->with('success', 'Kandidat berhasil dihapus!');
     }
 }

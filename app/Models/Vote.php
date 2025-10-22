@@ -11,8 +11,11 @@ class Vote extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'candidate_id',
+        'user_id',       // nullable, jika user login
+        'candidate_id',  // wajib
+        'identifier',    // string unik untuk guest
+        'ip',            // optional: alamat IP voter
+        'user_agent',    // optional: user agent browser
     ];
 
     /**

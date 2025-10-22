@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CandidateController;
-use App\Http\Controllers\EventController;
 use App\Http\Controllers\VoteController;
 
 /*
@@ -13,12 +12,21 @@ use App\Http\Controllers\VoteController;
 |--------------------------------------------------------------------------
 */
 
-// 🔹 Halaman utama redirect ke login
-Route::get('/', fn() => redirect('/login'));
+/*
+|--------------------------------------------------------------------------
+| Halaman Utama (Vote untuk semua orang)
+|--------------------------------------------------------------------------
+*/
+// 🗳️ Semua orang bisa lihat dan memilih kandidat tanpa login
+Route::get('/', [VoteController::class, 'showCandidates'])->name('vote');
+Route::post('/vote', [VoteController::class, 'store'])
+    ->name('vote.store')
+    ->middleware('throttle:5,1'); // batasi 5 vote / menit per IP (opsional)
+Route::get('/result', [VoteController::class, 'result'])->name('vote.result');
 
 /*
 |--------------------------------------------------------------------------
-| Authentication Routes
+| Authentication Routes (Untuk Admin)
 |--------------------------------------------------------------------------
 */
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -29,26 +37,22 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes (Khusus untuk admin)
+| Admin Routes (Hanya bisa diakses setelah login & role admin)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-    // Kelola kandidat
     Route::resource('/candidates', CandidateController::class);
-
-    // Lihat hasil voting
     Route::get('/admin/results', [AdminController::class, 'results'])->name('admin.results');
 });
 
-/*
-|--------------------------------------------------------------------------
-| User Routes (Khusus untuk siswa/user biasa)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'isUser'])->group(function () {
-    Route::get('/vote', [VoteController::class, 'showCandidates'])->name('vote');
-    Route::post('/vote/{id}', [VoteController::class, 'submit'])->name('vote.submit');
-    Route::get('/result', [VoteController::class, 'result'])->name('vote.result');
+
+Route::get('/candidates', [CandidateController::class, 'index'])->name('candidates.index');
+Route::get('/candidates/create', [CandidateController::class, 'create'])->name('candidates.create');
+Route::post('/candidates', [CandidateController::class, 'store'])->name('candidates.store');
+Route::get('/candidates/{candidate}/edit', [CandidateController::class, 'edit'])->name('candidates.edit');
+
+// Route export Excel (hanya untuk admin)
+Route::middleware(['auth', 'isAdmin'])->group(function () {
+    Route::get('/admin/vote/export', [VoteController::class, 'export'])->name('admin.vote.export');
 });

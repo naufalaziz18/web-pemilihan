@@ -21,9 +21,10 @@
         <thead class="table-dark">
             <tr>
                 <th style="width: 5%">No</th>
+                <th style="width: 20%">Foto</th>
                 <th style="width: 20%">Nama</th>
-                <th style="width: 30%">Visi</th>
-                <th style="width: 30%">Misi</th>
+                <th style="width: 25%">Visi</th>
+                <th style="width: 25%">Misi</th>
                 <th style="width: 15%">Aksi</th>
             </tr>
         </thead>
@@ -31,6 +32,13 @@
             @forelse ($candidates as $candidate)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
+                    <td>
+                        @if($candidate->photo)
+                            <img src="{{ asset('storage/' . $candidate->photo) }}" alt="Foto Kandidat" width="80" height="80" class="rounded">
+                        @else
+                            <span class="text-muted">Tidak ada foto</span>
+                        @endif
+                    </td>
                     <td>{{ $candidate->name }}</td>
                     <td>{{ $candidate->vision }}</td>
                     <td>{{ $candidate->mission }}</td>
@@ -45,7 +53,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted">Belum ada kandidat yang terdaftar.</td>
+                    <td colspan="6" class="text-center text-muted">Belum ada kandidat yang terdaftar.</td>
                 </tr>
             @endforelse
         </tbody>

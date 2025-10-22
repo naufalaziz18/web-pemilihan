@@ -27,8 +27,6 @@ class AdminController extends Controller
     public function results()
     {
         $candidates = Candidate::withCount('votes')->get();
-
-        // Hitung total suara
         $totalVotes = Vote::count();
 
         return view('admin.results', compact('candidates', 'totalVotes'));
