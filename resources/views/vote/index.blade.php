@@ -1,31 +1,40 @@
 @extends('layouts.app')
 
 @section('content')
-<h2>Pilih Ketua OSIS</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Pilih Kandidat Ketua OSIS</h2>
 
-@if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
-@endif
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-@if(auth()->user()->has_voted)
-    <div class="alert alert-info">Kamu sudah memilih!</div>
-@else
-<form action="{{ route('vote.store') }}" method="POST">
-    @csrf
-    <div class="row">
-        @foreach($candidates as $candidate)
-        <div class="col-md-4 mb-3">
-            <div class="card p-3">
-                <h4>{{ $candidate->name }}</h4>
-                <p><b>Visi:</b> {{ $candidate->vision }}</p>
-                <p><b>Misi:</b> {{ $candidate->mission }}</p>
-                <button type="submit" name="candidate_id" value="{{ $candidate->id }}" class="btn btn-success w-100">
-                    Pilih
-                </button>
-            </div>
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    @if($hasVoted)
+        <div class="alert alert-info text-center">
+            Kamu sudah memberikan suara. Terima kasih atas partisipasimu!
         </div>
-        @endforeach
-    </div>
-</form>
-@endif
+    @else
+        <div class="row">
+            @foreach($candidates as $candidate)
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $candidate->name }}</h5>
+                            <p><strong>Visi:</strong> {{ $candidate->vision }}</p>
+                            <p><strong>Misi:</strong> {{ $candidate->mission }}</p>
+
+                            <form action="{{ route('vote.submit', $candidate->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-primary w-100">Pilih Kandidat Ini</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
 @endsection

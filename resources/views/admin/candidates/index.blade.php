@@ -3,48 +3,52 @@
 @section('content')
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Hasil Voting</h2>
+        <h2 class="mb-0">Daftar Kandidat</h2>
         <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">← Kembali ke Dashboard</a>
     </div>
 
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
 
+    <div class="mb-3">
+        <a href="{{ route('candidates.create') }}" class="btn btn-primary">+ Tambah Kandidat</a>
+    </div>
+
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
             <tr>
                 <th style="width: 5%">No</th>
-                <th style="width: 25%">Nama Kandidat</th>
-                <th style="width: 20%">Jumlah Suara</th>
-                <th style="width: 20%">Persentase</th>
+                <th style="width: 20%">Nama</th>
+                <th style="width: 30%">Visi</th>
+                <th style="width: 30%">Misi</th>
+                <th style="width: 15%">Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($results as $index => $result)
+            @forelse ($candidates as $candidate)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $result->name }}</td>
-                    <td>{{ $result->votes_count }}</td>
+                    <td>{{ $candidate->name }}</td>
+                    <td>{{ $candidate->vision }}</td>
+                    <td>{{ $candidate->mission }}</td>
                     <td>
-                        @php
-                            $percentage = $totalVotes > 0 ? round(($result->votes_count / $totalVotes) * 100, 2) : 0;
-                        @endphp
-                        {{ $percentage }}%
+                        <a href="{{ route('candidates.edit', $candidate->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kandidat ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                        </form>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="text-center text-muted">Belum ada hasil voting yang tersedia.</td>
+                    <td colspan="5" class="text-center text-muted">Belum ada kandidat yang terdaftar.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
-
-    <div class="alert alert-info mt-3">
-        Total Suara Masuk: <b>{{ $totalVotes }}</b>
-    </div>
 </div>
 @endsection
